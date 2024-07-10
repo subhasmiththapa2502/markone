@@ -1,12 +1,16 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import React, { useEffect } from 'react';
+import { Provider, useDispatch, useSelector } from 'react-redux';
+import store from './store'; // Adjust import path as per your project structure
+import { RootState, AppDispatch } from './store'; // Adjust import path as per your project structure
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
+import { Stack } from 'expo-router';
+
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import {fetchGames} from "@/components/dataSlice";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -42,18 +46,32 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return (
+      <Provider store={store}>
+        <RootLayoutNav />
+      </Provider>
+  );
 }
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const dispatch = useDispatch<AppDispatch>();
+  const { games, status, error } = useSelector((state: RootState) => state.data);
+
+  useEffect(() => {
+    dispatch(fetchGames());
+  }, [dispatch]);
+  useEffect(() => {
+
+  }, [games]);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-    </ThemeProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="details" options={{ presentation: 'modal' }} />
+        </Stack>
+      </ThemeProvider>
   );
 }
